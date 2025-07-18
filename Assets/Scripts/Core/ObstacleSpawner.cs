@@ -4,16 +4,16 @@ using System.Collections;
 public class ObstacleSpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    public GameObject obstaclePrefab; // Still needed for initial pool setup
-    public GameObject orbPrefab;      // Still needed for initial pool setup
+    public GameObject obstaclePrefab; 
+    public GameObject orbPrefab;      
     public float spawnDistance = 20f;
     public float minSpawnInterval = 1f;
     public float maxSpawnInterval = 3f;
-    public float orbSpawnChance = 0.9f; // Increased chance for orbs
+    public float orbSpawnChance = 0.9f;  
 
     [Header("Spawn Positions")]
-    public Transform[] playerSpawnPoints; // For X and Y positions within lanes
-    public Transform[] ghostSpawnPoints;  // For X and Y positions within lanes
+    public Transform[] playerSpawnPoints;
+    public Transform[] ghostSpawnPoints; 
 
     private bool isSpawning;
 
@@ -62,10 +62,8 @@ public class ObstacleSpawner : MonoBehaviour
 
         int randomIndex = Random.Range(0, playerSpawnPoints.Length);
 
-        // Player Obstacle
-        Vector3 playerSpawnPos = playerSpawnPoints[randomIndex].position;
-        // Adjust Z position relative to the player's current Z position
-        playerSpawnPos.z = GameManager.Instance.playerController.transform.position.z + spawnDistance;
+         Vector3 playerSpawnPos = playerSpawnPoints[randomIndex].position;
+         playerSpawnPos.z = GameManager.Instance.playerController.transform.position.z + spawnDistance;
 
         GameObject playerObstacle = ObjectPool.Instance.SpawnFromPool("Obstacle", playerSpawnPos, Quaternion.identity);
         if (playerObstacle != null)
@@ -75,11 +73,9 @@ public class ObstacleSpawner : MonoBehaviour
             if (rb != null) rb.linearVelocity = Vector3.zero;
         }
 
-        // Ghost Obstacle
-        if (ghostSpawnPoints.Length > randomIndex)
+         if (ghostSpawnPoints.Length > randomIndex)
         {
             Vector3 ghostSpawnPos = ghostSpawnPoints[randomIndex].position;
-            // Adjust Z position relative to the ghost player's current Z position
             ghostSpawnPos.z = GameManager.Instance.ghostPlayer.transform.position.z + spawnDistance;
 
             GameObject ghostObstacle = ObjectPool.Instance.SpawnFromPool("GhostObstacle", ghostSpawnPos, Quaternion.identity);
@@ -108,9 +104,7 @@ public class ObstacleSpawner : MonoBehaviour
 
         int randomIndex = Random.Range(0, playerSpawnPoints.Length);
 
-        // Player Orb
         Vector3 playerSpawnPos = playerSpawnPoints[randomIndex].position;
-        // Adjust Z position relative to the player's current Z position
         playerSpawnPos.z = GameManager.Instance.playerController.transform.position.z + spawnDistance;
         playerSpawnPos.y += 1f; // Orbs typically float above the ground
 
@@ -126,7 +120,6 @@ public class ObstacleSpawner : MonoBehaviour
         if (ghostSpawnPoints.Length > randomIndex)
         {
             Vector3 ghostSpawnPos = ghostSpawnPoints[randomIndex].position;
-            // Adjust Z position relative to the ghost player's current Z position
             ghostSpawnPos.z = GameManager.Instance.ghostPlayer.transform.position.z + spawnDistance;
             ghostSpawnPos.y += 1f;
 

@@ -59,13 +59,8 @@ public class ObjectPool : MonoBehaviour
         if (poolDictionary[tag].Count == 0)
         {
             Debug.LogWarning($"Pool for tag {tag} is empty. Consider increasing pool size or dynamically expanding.");
-            // Optionally, instantiate a new object if the pool is empty
-            // GameObject newObj = Instantiate(pools.Find(p => p.tag == tag).prefab);
-            // newObj.SetActive(true);
-            // newObj.transform.position = position;
-            // newObj.transform.rotation = rotation;
-            // return newObj;
-            return null; // For now, return null if empty
+
+            return null; 
         }
 
         GameObject objectToSpawn = poolDictionary[tag].Dequeue();

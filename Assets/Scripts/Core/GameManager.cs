@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
-// Removed Unity.VisualScripting as it wasn't used and might cause conflicts if not installed
 
 public class GameManager : MonoBehaviour
 {
@@ -21,13 +20,13 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public GameUI gameUI;
     public GameObject gameOverScreen;
-    public GameObject mainMenuScreen; // Reference to your main menu UI panel
+    public GameObject mainMenuScreen; 
 
     private float currentSpeed;
     private int score;
-    private int botScore; // Added bot score variable
+    private int botScore; 
     private bool isGameRunning;
-    public bool firstOpening; // This will now work as intended with scene reloads
+    public bool firstOpening; 
     private float gameTime;
 
     public float CurrentSpeed => currentSpeed;
@@ -41,26 +40,18 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             Debug.Log("GameManager: Instance set successfully.");
-            // REMOVED: DontDestroyOnLoad(gameObject);
-            // Removing this line ensures GameManager is recreated with each scene load,
-            // allowing 'firstOpening' and scene-specific references to work correctly.
         }
         else
         {
-            // If an instance already exists (e.g., from a previous scene load), destroy this new one.
             Destroy(gameObject);
-            return; // Exit to prevent further execution on duplicate
-        }
+            return;         }
 
-        // Initialize firstOpening here. It will be true on the very first load of the scene.
-        // It will be set to false by StartGame() and persist for the duration of the scene.
         firstOpening = true;
     }
 
     void Start()
     {
         Debug.Log("GameManager: Start() called.");
-        // Check if ObjectPool.Instance is available here
         if (ObjectPool.Instance == null)
         {
             Debug.LogError("GameManager: ObjectPool.Instance is NULL in Start()! Check Script Execution Order.");
@@ -70,15 +61,12 @@ public class GameManager : MonoBehaviour
             Debug.Log("GameManager: ObjectPool.Instance is available in Start().");
         }
 
-        // Now, 'firstOpening' correctly dictates initial state based on scene load
         if (firstOpening == false)
         {
-            // This path is taken if the scene was reloaded (e.g., via RestartGame)
             StartGame();
         }
         else
         {
-            // This path is taken on the very first load of this game scene
             ShowMainMenu();
         }
     }
@@ -88,8 +76,8 @@ public class GameManager : MonoBehaviour
         if (isGameRunning)
         {
             gameTime += Time.deltaTime;
-            UpdateSpeed(); // Uncommented
-            UpdateScore(); // Uncommented
+            UpdateSpeed(); 
+            UpdateScore(); 
         }
     }
 
@@ -100,12 +88,12 @@ public class GameManager : MonoBehaviour
             mainMenuScreen.SetActive(true);
         if (gameOverScreen != null)
             gameOverScreen.SetActive(false);
-        Time.timeScale = 0f; // Pause game logic
+        Time.timeScale = 0f; 
     }
 
     public void StartGame()
     {
-        firstOpening = false; // Set to false once game starts, so restarts go directly to game
+        firstOpening = false; 
         isGameRunning = true;
         currentSpeed = initialSpeed;
         score = 0;
@@ -117,13 +105,12 @@ public class GameManager : MonoBehaviour
         if (gameOverScreen != null)
             gameOverScreen.SetActive(false);
 
-        // Ensure all scene references are valid before calling their methods
         if (playerController != null) playerController.ResetPlayer();
         if (ghostPlayer != null) ghostPlayer.ResetPlayer();
         if (obstacleSpawner != null) obstacleSpawner.StartSpawning();
         if (networkSimulator != null) networkSimulator.StartSimulation();
 
-        Time.timeScale = 1f; // Resume game logic
+        Time.timeScale = 1f; 
     }
 
     void UpdateSpeed()
@@ -151,7 +138,7 @@ public class GameManager : MonoBehaviour
     {
         botScore += points;
         if (gameUI != null)
-            gameUI.UpdateScore_Bot(botScore); // Pass botScore to the UI method
+            gameUI.UpdateScore_Bot(botScore); 
     }
 
     public void GameOver()
@@ -162,16 +149,14 @@ public class GameManager : MonoBehaviour
 
         if (obstacleSpawner != null) obstacleSpawner.StopSpawning();
         if (networkSimulator != null) networkSimulator.StopSimulation();
-        Time.timeScale = 0f; // Pause game logic
+        Time.timeScale = 0f; 
     }
 
     public void RestartGame()
     {
-        // When RestartGame is called, we want to reload the scene.
-        // The 'firstOpening' flag will then correctly ensure StartGame() is called
-        // on the new GameManager instance in the reloaded scene's Start() method.
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        Time.timeScale = 1f; // Ensure timeScale is reset for the next scene load
+        Time.timeScale = 1f;
     }
 
     public void ExitGame()
