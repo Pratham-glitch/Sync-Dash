@@ -34,6 +34,10 @@ public class GameManager : MonoBehaviour
     public int Score => score;
     public bool IsGameRunning => isGameRunning;
 
+    private float targetSpeed;
+    public float accelerationRate = 0.1f;
+
+
     void Awake()
     {
         //Application.targetFrameRate = 60; 
@@ -82,6 +86,12 @@ public class GameManager : MonoBehaviour
             UpdateSpeed(); 
             UpdateScore(); 
         }
+        currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, accelerationRate * Time.deltaTime);
+    }
+
+    public void SetTargetSpeed(float newSpeed)
+    {
+        targetSpeed = newSpeed;
     }
 
     public void ShowMainMenu()

@@ -34,7 +34,9 @@ public class PlayerController : MonoBehaviour
     private float jumpStartTime;
     private Vector3 jumpStartPosition;
     private Vector3 jumpTargetPosition;
-    private float jumpDuration = 0.5f; 
+    private float jumpDuration = 0.5f;
+    public float maxSpeed = 50f;
+
 
     public ParticleSystem orbCollected;
 
@@ -46,6 +48,8 @@ public class PlayerController : MonoBehaviour
 
         currentTargetZ = transform.position.z;
         smoothedZ = transform.position.z;
+        GameManager.Instance.SetTargetSpeed(maxSpeed);
+
     }
 
     void Update()
@@ -127,6 +131,7 @@ public class PlayerController : MonoBehaviour
             );
         }
     }
+
 
     void SmoothJumpMovement()
     {

@@ -58,14 +58,57 @@ public class GhostPlayer : MonoBehaviour
 
         CheckGrounded();
         ProcessActions();
-        ApplyDelayedForwardMovement();
-    }
 
+        UpdateZMovement();
+    }
     void FixedUpdate()
     {
-        if (isJumping && !isGrounded)
+        if (isJumping)
         {
-            SmoothJumpMovement();
+            UpdateJumpMovement();
+        }
+    }
+
+    void UpdateZMovement()
+    {
+        float idealDeltaZ = GameManager.Instance.CurrentSpeed * Time.deltaTime;
+        currentTargetZ += idealDeltaZ;
+
+        float targetZWithDelay = currentTargetZ - (GameManager.Instance.CurrentSpeed * networkDelay);
+        smoothedZ = Mathf.SmoothDamp(smoothedZ, targetZWithDelay, ref zVelocity, SMOOTH_TIME);
+
+        // Always apply Z movement, even during jumps
+        Vector3 newPosition = transform.position;
+        newPosition.z = smoothedZ;
+        transform.position = newPosition;
+    }
+
+    void UpdateJumpMovement()
+    {
+        // Only handle vertical movement during jumps
+        if (!isGrounded)
+        {
+            // Apply gravity
+            rb.linearVelocity += Physics.gravity * Time.fixedDeltaTime;
+        }
+    }
+
+    void PerformJump()
+    {
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
+        float jumpForce = 10f;
+        if (GameManager.Instance != null && GameManager.Instance.playerController != null)
+        {
+            jumpForce = GameManager.Instance.playerController.jumpForce;
+        }
+
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+        isJumping = true;
+
+        if (ParticleManager.Instance != null)
+        {
+            ParticleManager.Instance.PlayJumpEffect(transform.position);
         }
     }
 
@@ -87,6 +130,7 @@ public class GhostPlayer : MonoBehaviour
             );
         }
     }
+
 
     void SmoothJumpMovement()
     {
@@ -136,7 +180,7 @@ public class GhostPlayer : MonoBehaviour
         }
     }
 
-    void PerformJump()
+    /*void PerformJump()
     {
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
 
@@ -160,7 +204,7 @@ public class GhostPlayer : MonoBehaviour
         {
             Debug.LogWarning("ParticleManager.Instance is null. Jump effect for ghost cannot be played.");
         }
-    }
+    }*/
 
     void PlayCollisionEffect(Vector3 position)
     {
