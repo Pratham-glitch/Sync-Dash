@@ -27,14 +27,15 @@ public class OrbBehavior : MonoBehaviour
     private void HandleCollection(string collectorTag, GameObject collector)
     {
         Vector3 collectorPosition = collector.transform.position;
-       
-        if(gameObject.CompareTag("Orb"))
+        Vector3 orbPosition = transform.position;
+
+        if (gameObject.CompareTag("Orb"))
         {
-            collector.GetComponent<PlayerController>().PlayOrbCollectEffect(transform.position);
+            collector.GetComponent<PlayerController>().PlayOrbCollectEffect(orbPosition);
         }
-        else
+        else if (gameObject.CompareTag("GhostOrb"))
         {
-            collector.GetComponent<GhostPlayer>().PlayOrbCollectEffect(transform.position);
+            collector.GetComponent<GhostPlayer>().PlayOrbCollectEffect(orbPosition);
         }
 
         if (GameManager.Instance != null)

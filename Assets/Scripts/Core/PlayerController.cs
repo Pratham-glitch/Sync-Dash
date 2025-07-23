@@ -258,8 +258,9 @@ public class PlayerController : MonoBehaviour
         zVelocity = 0f;
     }
 
-    internal void PlayOrbCollectEffect(Vector3 position)
+    public void PlayOrbCollectEffect(Vector3 position)
     {
+
         orbCollected.transform.position = position;
         orbCollected.Play();
     }

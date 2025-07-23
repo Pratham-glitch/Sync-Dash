@@ -2865,15 +2865,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c60a4475002007c40a1d3032673778b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interpolationSpeed: 10
   networkDelay: 0.1
   rb: {fileID: 1325765586}
+  orbCollected: {fileID: 733643555}
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
   groundCheckDistance: 0.1
   groundCheck: {fileID: 0}
-  orbCollected: {fileID: 733643555}
 --- !u!54 &1325765586
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3954,7 +3953,7 @@ MonoBehaviour:
   spawnDistance: 20
   minSpawnInterval: 2
   maxSpawnInterval: 4
-  orbSpawnChance: 0.3
+  orbSpawnChance: 0.7
   playerSpawnPoints:
   - {fileID: 676374294}
   ghostSpawnPoints:
@@ -3983,7 +3982,7 @@ MonoBehaviour:
   mainMenuScreen: {fileID: 258833566}
   firstOpening: 0
   gameOverText: {fileID: 1279404426}
-  accelerationRate: 0.1
+  accelerationRate: 0.5
 --- !u!4 &1794620436
 Transform:
   m_ObjectHideFlags: 0
