@@ -36,39 +36,6 @@ public class GhostPlayer : MonoBehaviour
         transform.Translate(Vector3.forward * GameManager.Instance.CurrentSpeed * Time.deltaTime);
     }
 
-
-   /* void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("GhostOrb"))
-        {
-            CollectOrb(other.gameObject);
-        }
-    }
-
-    void CollectOrb(GameObject orb)
-    {
-        //GameManager.Instance.AddScore_Bot(10);
-
-        if (ObjectPool.Instance != null)
-        {
-            ObjectPool.Instance.ReturnObject("GhostOrb", orb);
-        }
-        else
-        {
-            Debug.Log($"GhostOrb found at {orb.name} for pooling.");
-            if (ObjectPool.Instance != null)
-            {
-                ObjectPool.Instance.ReturnObject("GhostOrb", orb);
-                return; // Only return one orb
-            }
-            else
-            {
-                Debug.LogWarning("ObjectPool.Instance is null. GhostOrb cannot be returned to pool.");
-            }
-            Destroy(orb);
-        }
-    }*/
-
     void ProcessActions()
     {
         while (actionQueue.Count > 0)
@@ -94,12 +61,6 @@ public class GhostPlayer : MonoBehaviour
             case ActionType.Jump:
                 PerformJump();
                 break;
-            case ActionType.Collect:
-                //PlayCollectEffect(action.position);
-                break;
-            case ActionType.Collision:
-                //PlayCollisionEffect(action.position);
-                break;
         }
     }
 
@@ -114,7 +75,6 @@ public class GhostPlayer : MonoBehaviour
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 10f, rb.linearVelocity.z);
         }
 
-        // Play jump particle effect for the ghost
         if (ParticleManager.Instance != null)
         {
             ParticleManager.Instance.PlayJumpEffect(transform.position);
@@ -148,7 +108,7 @@ public class GhostPlayer : MonoBehaviour
     {
         transform.position = startPosition;
         rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero; // Also reset angular velocity
+        rb.angularVelocity = Vector3.zero; 
         actionQueue.Clear();
     }
 

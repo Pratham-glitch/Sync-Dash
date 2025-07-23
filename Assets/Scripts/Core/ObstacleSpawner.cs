@@ -106,7 +106,7 @@ public class ObstacleSpawner : MonoBehaviour
 
         Vector3 playerSpawnPos = playerSpawnPoints[randomIndex].position;
         playerSpawnPos.z = GameManager.Instance.playerController.transform.position.z + spawnDistance;
-        playerSpawnPos.y += 1f; // Orbs typically float above the ground
+        playerSpawnPos.y += 1f; 
 
         GameObject playerOrb = ObjectPool.Instance.SpawnFromPool("Orb", playerSpawnPos, Quaternion.identity);
         if (playerOrb != null)

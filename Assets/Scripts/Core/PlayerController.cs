@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public Rigidbody rb;
     [Tooltip("Assign the CameraShake script attached to the player's camera.")]
-    //public CameraShake playerCameraShake;
 
     private bool isGrounded;
     private bool canJump = true;
