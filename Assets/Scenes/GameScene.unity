@@ -2791,6 +2791,11 @@ MonoBehaviour:
   interpolationSpeed: 10
   networkDelay: 0.1
   rb: {fileID: 1325765586}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundCheckDistance: 0.1
+  groundCheck: {fileID: 0}
   orbCollected: {fileID: 733643555}
 --- !u!54 &1325765586
 Rigidbody:
@@ -2816,8 +2821,8 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
+  m_Interpolate: 1
+  m_Constraints: 2
   m_CollisionDetection: 0
 --- !u!65 &1325765587
 BoxCollider:
@@ -3906,8 +3911,8 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
+  m_Interpolate: 1
+  m_Constraints: 2
   m_CollisionDetection: 0
 --- !u!65 &1893869448
 BoxCollider:

@@ -163,7 +163,7 @@ public class CameraManager : MonoBehaviour
     {
         isShaking = true;
         float elapsed = 0f;
-        Debug.Log("ShakeCoroutine just ran");
+        //Debug.Log("ShakeCoroutine just ran");
 
         while (elapsed < duration)
         {
@@ -226,7 +226,6 @@ public class CameraManager : MonoBehaviour
 
     public void HitShake()
     {
-        Debug.Log("hitshake just ran");
 
         Shake(0.2f, 0.15f, 1f);
     }

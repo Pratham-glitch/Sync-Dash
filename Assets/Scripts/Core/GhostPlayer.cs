@@ -14,6 +14,24 @@ public class GhostPlayer : MonoBehaviour
 
     private Queue<ActionData> actionQueue = new Queue<ActionData>();
     private Vector3 startPosition;
+
+    private float currentTargetZ;
+    private float smoothedZ;
+    private float zVelocity; 
+    private const float SMOOTH_TIME = 0.1f; 
+
+    private bool isJumping = false;
+    private float jumpStartTime;
+    private Vector3 jumpStartPosition;
+    private Vector3 jumpTargetPosition;
+    private float jumpDuration = 0.5f; 
+
+    [Header("Ground Check")]
+    public LayerMask groundLayer = 1;
+    public float groundCheckDistance = 0.1f;
+    public Transform groundCheck;
+    private bool isGrounded;
+
     public ParticleSystem orbCollected;
 
     void Start()
@@ -21,19 +39,74 @@ public class GhostPlayer : MonoBehaviour
         startPosition = transform.position;
         if (rb == null)
             rb = GetComponent<Rigidbody>();
+
+        currentTargetZ = transform.position.z;
+        smoothedZ = transform.position.z;
+
+        if (groundCheck == null)
+        {
+            GameObject groundCheckObj = new GameObject("GroundCheck");
+            groundCheckObj.transform.SetParent(transform);
+            groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
+            groundCheck = groundCheckObj.transform;
+        }
     }
 
     void Update()
     {
         if (GameManager.Instance == null || !GameManager.Instance.IsGameRunning) return;
 
+        CheckGrounded();
         ProcessActions();
-        MoveForward();
+        ApplyDelayedForwardMovement();
     }
 
-    void MoveForward()
+    void FixedUpdate()
     {
-        transform.Translate(Vector3.forward * GameManager.Instance.CurrentSpeed * Time.deltaTime);
+        if (isJumping && !isGrounded)
+        {
+            SmoothJumpMovement();
+        }
+    }
+
+    void ApplyDelayedForwardMovement()
+    {
+        float idealDeltaZ = GameManager.Instance.CurrentSpeed * Time.deltaTime;
+        currentTargetZ += idealDeltaZ;
+
+        float targetZWithDelay = currentTargetZ - (GameManager.Instance.CurrentSpeed * networkDelay);
+
+        smoothedZ = Mathf.SmoothDamp(smoothedZ, targetZWithDelay, ref zVelocity, SMOOTH_TIME);
+
+        if (!isJumping)
+        {
+            transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                smoothedZ
+            );
+        }
+    }
+
+    void SmoothJumpMovement()
+    {
+        float newZ = Mathf.SmoothDamp(transform.position.z, smoothedZ, ref zVelocity, SMOOTH_TIME);
+        transform.position = new Vector3(
+            transform.position.x,
+            transform.position.y,
+            newZ
+        );
+    }
+
+    void CheckGrounded()
+    {
+        bool wasGrounded = isGrounded;
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckDistance, groundLayer);
+
+        if (isGrounded && !wasGrounded && isJumping)
+        {
+            isJumping = false;
+        }
     }
 
     void ProcessActions()
@@ -41,7 +114,6 @@ public class GhostPlayer : MonoBehaviour
         while (actionQueue.Count > 0)
         {
             ActionData action = actionQueue.Peek();
-
             if (Time.time >= action.timestamp + networkDelay)
             {
                 actionQueue.Dequeue();
@@ -66,14 +138,19 @@ public class GhostPlayer : MonoBehaviour
 
     void PerformJump()
     {
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
+        float jumpForce = 10f; 
         if (GameManager.Instance != null && GameManager.Instance.playerController != null)
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, GameManager.Instance.playerController.jumpForce, rb.linearVelocity.z);
+            jumpForce = GameManager.Instance.playerController.jumpForce;
         }
-        else
-        {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 10f, rb.linearVelocity.z);
-        }
+
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+
+        isJumping = true;
+        jumpStartTime = Time.time;
+        jumpStartPosition = transform.position;
 
         if (ParticleManager.Instance != null)
         {
@@ -85,8 +162,6 @@ public class GhostPlayer : MonoBehaviour
         }
     }
 
-   
-
     void PlayCollisionEffect(Vector3 position)
     {
         if (ParticleManager.Instance != null)
@@ -95,7 +170,7 @@ public class GhostPlayer : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("ParticleManager.Instance is null. Jump effect for ghost cannot be played.");
+            Debug.LogWarning("ParticleManager.Instance is null. Collision effect for ghost cannot be played.");
         }
     }
 
@@ -108,8 +183,13 @@ public class GhostPlayer : MonoBehaviour
     {
         transform.position = startPosition;
         rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero; 
+        rb.angularVelocity = Vector3.zero;
         actionQueue.Clear();
+
+        isJumping = false;
+        currentTargetZ = startPosition.z;
+        smoothedZ = startPosition.z;
+        zVelocity = 0f;
     }
 
     internal void PlayOrbCollectEffect(Vector3 position)

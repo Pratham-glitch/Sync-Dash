@@ -50,7 +50,7 @@ public class ObstacleSpawner : MonoBehaviour
     {
         if (ObjectPool.Instance == null || GameManager.Instance == null || GameManager.Instance.playerController == null)
         {
-            Debug.LogWarning("ObjectPool, GameManager, or PlayerController not initialized. Cannot spawn obstacles." + (ObjectPool.Instance ) + GameManager.Instance == null + GameManager.Instance.playerController);
+            //Debug.LogWarning("ObjectPool, GameManager, or PlayerController not initialized. Cannot spawn obstacles." + (ObjectPool.Instance ) + GameManager.Instance == null + GameManager.Instance.playerController);
             return;
         }
 
@@ -92,7 +92,7 @@ public class ObstacleSpawner : MonoBehaviour
     {
         if (ObjectPool.Instance == null || GameManager.Instance == null || GameManager.Instance.playerController == null)
         {
-            Debug.LogWarning("ObjectPool, GameManager, or PlayerController not initialized. Cannot spawn orbs.");
+            //Debug.LogWarning("ObjectPool, GameManager, or PlayerController not initialized. Cannot spawn orbs.");
             return;
         }
 

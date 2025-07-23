@@ -36,11 +36,12 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
+        //Application.targetFrameRate = 60; 
+        //QualitySettings.vSyncCount = 1;
         Debug.Log("GameManager: Awake() called.");
         if (Instance == null)
         {
             Instance = this;
-            Debug.Log("GameManager: Instance set successfully.");
         }
         else
         {
@@ -54,14 +55,13 @@ public class GameManager : MonoBehaviour
     {
         if(!gameUI.gameObject.activeInHierarchy) gameUI.gameObject.SetActive(true);
 
-        Debug.Log("GameManager: Start() called.");
         if (ObjectPool.Instance == null)
         {
             Debug.LogError("GameManager: ObjectPool.Instance is NULL in Start()! Check Script Execution Order.");
         }
         else
         {
-            Debug.Log("GameManager: ObjectPool.Instance is available in Start().");
+            //Debug.Log("GameManager: ObjectPool.Instance is available in Start().");
         }
 
         if (firstOpening == false)
@@ -151,7 +151,6 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator GameOverCoroutine()
     {
-        Debug.Log("GameOverCoroutine just ran");
         CameraManager.instance.HitShake();
         gameOverText.SetActive(true);
 
@@ -160,7 +159,7 @@ public class GameManager : MonoBehaviour
         CameraManager.instance.StartRotating(Orbit.transform);
 
         Destroy(playerController.gameObject);
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(5);
 
         isGameRunning = false;
         if (gameOverScreen != null)

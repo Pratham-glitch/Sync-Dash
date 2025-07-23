@@ -26,7 +26,15 @@ public class PlayerController : MonoBehaviour
     private Queue<ActionData> actionQueue = new Queue<ActionData>();
 
     private float currentTargetZ;
-    private float lastUpdateTime;
+    private float smoothedZ;
+    private float zVelocity; 
+    private const float SMOOTH_TIME = 0.1f; 
+
+    private bool isJumping = false;
+    private float jumpStartTime;
+    private Vector3 jumpStartPosition;
+    private Vector3 jumpTargetPosition;
+    private float jumpDuration = 0.5f; 
 
     public ParticleSystem orbCollected;
 
@@ -37,7 +45,7 @@ public class PlayerController : MonoBehaviour
             rb = GetComponent<Rigidbody>();
 
         currentTargetZ = transform.position.z;
-        lastUpdateTime = Time.time;
+        smoothedZ = transform.position.z;
     }
 
     void Update()
@@ -48,6 +56,15 @@ public class PlayerController : MonoBehaviour
         HandleInput();
         ProcessQueuedActions();
         ApplyDelayedForwardMovement();
+    }
+
+    void FixedUpdate()
+    {
+        // Handle jump physics in FixedUpdate for smoother physics
+        if (isJumping && !isGrounded)
+        {
+            SmoothJumpMovement();
+        }
     }
 
     void HandleInput()
@@ -99,24 +116,42 @@ public class PlayerController : MonoBehaviour
 
         float targetZWithDelay = currentTargetZ - (GameManager.Instance.CurrentSpeed * inputDelay);
 
+        smoothedZ = Mathf.SmoothDamp(smoothedZ, targetZWithDelay, ref zVelocity, SMOOTH_TIME);
+
+        if (!isJumping)
+        {
+            transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                smoothedZ
+            );
+        }
+    }
+
+    void SmoothJumpMovement()
+    {
+        float newZ = Mathf.SmoothDamp(transform.position.z, smoothedZ, ref zVelocity, SMOOTH_TIME);
         transform.position = new Vector3(
             transform.position.x,
             transform.position.y,
-            Mathf.Lerp(transform.position.z, targetZWithDelay, 10f * Time.deltaTime)
+            newZ
         );
-
-        lastUpdateTime = Time.time;
     }
 
     void Jump()
     {
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+
+        isJumping = true;
+        jumpStartTime = Time.time;
+        jumpStartPosition = transform.position;
     }
 
     void PerformJump()
     {
         Jump();
-        // Play jump particle effect for the player
         if (ParticleManager.Instance != null)
         {
             ParticleManager.Instance.PlayJumpEffect(transform.position);
@@ -135,10 +170,17 @@ public class PlayerController : MonoBehaviour
 
     void CheckGrounded()
     {
+        bool wasGrounded = isGrounded;
         isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckDistance, groundLayer);
+
         if (isGrounded)
         {
             canJump = true;
+
+            if (!wasGrounded && isJumping)
+            {
+                isJumping = false;
+            }
         }
     }
 
@@ -153,8 +195,6 @@ public class PlayerController : MonoBehaviour
     void CollectOrb(GameObject orb)
     {
         GameManager.Instance.AddScore(10);
-
-       
 
         if (GameManager.Instance.networkSimulator != null)
         {
@@ -178,8 +218,6 @@ public class PlayerController : MonoBehaviour
 
     void HitObstacle(GameObject obstacle)
     {
-        
-
         if (GameManager.Instance.networkSimulator != null)
         {
             GameManager.Instance.networkSimulator.SendAction(new ActionData
@@ -200,7 +238,6 @@ public class PlayerController : MonoBehaviour
         }
 
         GameManager.Instance.GameOver();
-
     }
 
     public void ResetPlayer()
@@ -210,8 +247,10 @@ public class PlayerController : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
         actionQueue.Clear();
         canJump = true;
+        isJumping = false;
         currentTargetZ = startPosition.z;
-        lastUpdateTime = Time.time;
+        smoothedZ = startPosition.z;
+        zVelocity = 0f;
     }
 
     internal void PlayOrbCollectEffect(Vector3 position)

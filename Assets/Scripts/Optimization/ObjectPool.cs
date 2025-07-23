@@ -18,7 +18,6 @@ public class ObjectPool : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("ObjectPool: Awake() called.");
         if (Instance == null)
         {
             Instance = this;
@@ -44,7 +43,7 @@ public class ObjectPool : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("ObjectPool: Start() called.");
+        //Debug.Log("ObjectPool called.");
     }
 
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)
