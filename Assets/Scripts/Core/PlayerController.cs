@@ -196,29 +196,31 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void CollectOrb(GameObject orb)
-    {
-        GameManager.Instance.AddScore(10);
 
-        if (GameManager.Instance.networkSimulator != null)
-        {
-            GameManager.Instance.networkSimulator.SendAction(new ActionData
-            {
-                actionType = ActionType.Collect,
-                timestamp = Time.time,
-                position = orb.transform.position
-            });
-        }
 
-        if (ObjectPool.Instance != null)
-        {
-            ObjectPool.Instance.ReturnObject("Orb", orb);
-        }
-        else
-        {
-            Destroy(orb);
-        }
-    }
+    //void CollectOrb(GameObject orb)
+    //{
+    //    GameManager.Instance.AddScore(10);
+
+    //    if (GameManager.Instance.networkSimulator != null)
+    //    {
+    //        GameManager.Instance.networkSimulator.SendAction(new ActionData
+    //        {
+    //            actionType = ActionType.Collect,
+    //            timestamp = Time.time,
+    //            position = orb.transform.position
+    //        });
+    //    }
+
+    //    if (ObjectPool.Instance != null)
+    //    {
+    //        ObjectPool.Instance.ReturnObject("Orb", orb);
+    //    }
+    //    else
+    //    {
+    //        Destroy(orb);
+    //    }
+    //}
 
     void HitObstacle(GameObject obstacle)
     {
@@ -259,6 +261,7 @@ public class PlayerController : MonoBehaviour
 
     public void PlayOrbCollectEffect(Vector3 position)
     {
+        Debug.Log("PlayOrbCollectEffect" + position + "  ");
 
         orbCollected.transform.position = position;
         orbCollected.Play();

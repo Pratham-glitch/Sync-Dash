@@ -228,10 +228,8 @@ public class GhostPlayer : MonoBehaviour
 
     public void PlayOrbCollectEffect(Vector3 position)
     {
-        Debug.Log("PlayOrbCollectEffect" + position + "  ");
 
         orbCollected.transform.position = position;
-        Debug.Log("Ghost PlayOrbCollectEffect" + orbCollected.transform.position + "  ");
 
         orbCollected.Play();
     }

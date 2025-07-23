@@ -3953,7 +3953,7 @@ MonoBehaviour:
   spawnDistance: 20
   minSpawnInterval: 2
   maxSpawnInterval: 4
-  orbSpawnChance: 0.7
+  orbSpawnChance: 0.5
   playerSpawnPoints:
   - {fileID: 676374294}
   ghostSpawnPoints:

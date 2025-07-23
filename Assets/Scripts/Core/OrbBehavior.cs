@@ -10,14 +10,20 @@ public class OrbBehavior : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.collider.CompareTag("Player"))
         {
             HandleCollection("Player", other.gameObject);
         }
-        else if (other.CompareTag("GhostPlayer"))
+        else if (other.collider.CompareTag("GhostPlayer"))
         {
             HandleCollection("GhostPlayer", other.gameObject);
         }
+
     }
     void Update()
     {
