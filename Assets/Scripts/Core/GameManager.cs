@@ -51,6 +51,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        if(!gameUI.gameObject.activeInHierarchy) gameUI.gameObject.SetActive(true);
+
         Debug.Log("GameManager: Start() called.");
         if (ObjectPool.Instance == null)
         {
@@ -150,6 +152,11 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("GameOverCoroutine just ran");
         CameraManager.instance.HitShake();
+
+        GameObject Orbit = new GameObject("Orbit");
+        Orbit.transform.position = playerController.gameObject.transform.position;
+        CameraManager.instance.StartRotating(Orbit.transform);
+
         Destroy(playerController.gameObject);
         yield return new WaitForSeconds(3);
 

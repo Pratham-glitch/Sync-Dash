@@ -39,7 +39,15 @@ public class CameraManager : MonoBehaviour
     private Coroutine shakeCoroutine;
     private bool isShaking = false;
 
+    public Transform target;
+    public float speed = 90f;  
+    public Vector3 axis = Vector3.up;
+
     public static CameraManager instance;
+
+
+
+
 
     void Awake()
     {
@@ -74,6 +82,21 @@ public class CameraManager : MonoBehaviour
     {
         originalPosition = transform.localPosition;
         originalRotation = transform.localRotation;
+    }
+
+    public void StartRotating(Transform orbit)
+    {
+        target = orbit;
+        StartCoroutine(RotateCoroutine());
+    }
+
+    IEnumerator RotateCoroutine()
+    {
+        while (true)               
+        {
+            playerCamera.transform.RotateAround(target.position, axis, speed * Time.deltaTime);
+            yield return null;    
+        }
     }
 
     void LateUpdate()
