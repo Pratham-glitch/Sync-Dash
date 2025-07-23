@@ -89,6 +89,6 @@ Game Over: Colliding with an obstacle ends the game.
 
 Restart/Main Menu: On the Game Over screen, choose to "Restart" or return to the "Main Menu".
 
-Gameplay Video- https://youtu.be/mgc9uEpt07o
+Gameplay Video- https://youtu.be/CJUu_48KUNY
 
 This project is developed with Unity and is compatible with Unity 2021 or later versions.
