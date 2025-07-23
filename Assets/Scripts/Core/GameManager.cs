@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     private bool isGameRunning;
     public bool firstOpening; 
     private float gameTime;
+    public GameObject gameOverText;
 
     public float CurrentSpeed => currentSpeed;
     public int Score => score;
@@ -152,6 +153,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("GameOverCoroutine just ran");
         CameraManager.instance.HitShake();
+        gameOverText.SetActive(true);
 
         GameObject Orbit = new GameObject("Orbit");
         Orbit.transform.position = playerController.gameObject.transform.position;
