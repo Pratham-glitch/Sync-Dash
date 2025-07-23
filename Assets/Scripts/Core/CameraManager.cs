@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
@@ -21,7 +22,24 @@ public class CameraManager : MonoBehaviour
     public Vector3 cameraOffset = new Vector3(0f, 5f, -10f); 
     [Tooltip("The speed at which the camera interpolates towards its target position.")]
     [Range(1f, 20f)] 
-    public float interpolationSpeed = 5f; 
+    public float interpolationSpeed = 5f;
+
+    [Header("Shake Settings")]
+    [SerializeField] private float shakeDuration = 0.5f;
+    [SerializeField] private float shakeIntensity = 0.1f;
+    [SerializeField] private AnimationCurve shakeCurve = AnimationCurve.EaseInOut(0, 1, 1, 0);
+
+    [Header("Advanced Settings")]
+    [SerializeField] private bool useRandomDirection = true;
+    [SerializeField] private Vector3 shakeDirection = Vector3.one;
+    [SerializeField] private float rotationIntensity = 0f;
+
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
+    private Coroutine shakeCoroutine;
+    private bool isShaking = false;
+
+    public static CameraManager instance;
 
     void Awake()
     {
@@ -45,7 +63,17 @@ public class CameraManager : MonoBehaviour
             Debug.LogError("Ghost Player is not assigned in CameraSplitter. Please assign it in the Inspector.");
             return;
         }
+        if(instance == null)
+        {
+            instance = this;
+        }
 
+    }
+
+    private void Start()
+    {
+        originalPosition = transform.localPosition;
+        originalRotation = transform.localRotation;
     }
 
     void LateUpdate()
@@ -70,4 +98,125 @@ public class CameraManager : MonoBehaviour
             ghostCamera.transform.position = Vector3.Lerp(ghostCamera.transform.position, targetGhostPosition, interpolationSpeed * Time.deltaTime);
         }
     }
+
+
+
+
+    public void Shake()
+    {
+        Shake(shakeDuration, shakeIntensity);
+    }
+
+
+    public void Shake(float duration, float intensity)
+    {
+        Shake(duration, intensity, rotationIntensity);
+    }
+
+    public void Shake(float duration, float intensity, float rotIntensity)
+    {
+        if (isShaking && shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+        }
+
+        shakeCoroutine = StartCoroutine(ShakeCoroutine(duration, intensity, rotIntensity));
+    }
+
+
+    public void StopShake()
+    {
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+        }
+
+        transform.localPosition = originalPosition;
+        transform.localRotation = originalRotation;
+        isShaking = false;
+    }
+
+    private IEnumerator ShakeCoroutine(float duration, float intensity, float rotIntensity)
+    {
+        isShaking = true;
+        float elapsed = 0f;
+        Debug.Log("ShakeCoroutine just ran");
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+
+            float currentIntensity = intensity * shakeCurve.Evaluate(progress);
+            float currentRotIntensity = rotIntensity * shakeCurve.Evaluate(progress);
+
+            Vector3 shakeOffset;
+            if (useRandomDirection)
+            {
+                shakeOffset = Random.insideUnitSphere * currentIntensity;
+            }
+            else
+            {
+                shakeOffset = new Vector3(
+                    Random.Range(-1f, 1f) * shakeDirection.x,
+                    Random.Range(-1f, 1f) * shakeDirection.y,
+                    Random.Range(-1f, 1f) * shakeDirection.z
+                ) * currentIntensity;
+            }
+
+            transform.localPosition = originalPosition + shakeOffset;
+
+            if (currentRotIntensity > 0)
+            {
+                Vector3 rotationShake = new Vector3(
+                    Random.Range(-1f, 1f) * currentRotIntensity,
+                    Random.Range(-1f, 1f) * currentRotIntensity,
+                    Random.Range(-1f, 1f) * currentRotIntensity
+                );
+
+                transform.localRotation = originalRotation * Quaternion.Euler(rotationShake);
+            }
+
+            yield return null;
+        }
+
+        transform.localPosition = originalPosition;
+        transform.localRotation = originalRotation;
+        isShaking = false;
+    }
+
+    public void UpdateOriginalPosition()
+    {
+        if (!isShaking)
+        {
+            originalPosition = transform.localPosition;
+            originalRotation = transform.localRotation;
+        }
+    }
+
+    public bool IsShaking => isShaking;
+
+    public void ExplosionShake()
+    {
+        Shake(0.8f, 0.3f, 2f);
+    }
+
+    public void HitShake()
+    {
+        Debug.Log("hitshake just ran");
+
+        Shake(0.2f, 0.15f, 1f);
+    }
+
+    public void EarthquakeShake()
+    {
+        Shake(2f, 0.2f, 0.5f);
+    }
+
+    public void SubtleShake()
+    {
+        Shake(0.3f, 0.05f, 0f);
+    }
+
+
 }

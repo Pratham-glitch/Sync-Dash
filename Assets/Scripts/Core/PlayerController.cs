@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // Added for Queue
+using System.Collections.Generic;
+using UnityEditor.Rendering.LookDev;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,19 +13,23 @@ public class PlayerController : MonoBehaviour
 
     [Header("Input Delay")]
     [Tooltip("The delay in seconds between player input/intended position and action execution/actual position.")]
-    public float inputDelay = 0.15f; 
+    public float inputDelay = 0.15f;
 
     [Header("References")]
     public Transform groundCheck;
     public Rigidbody rb;
+    [Tooltip("Assign the CameraShake script attached to the player's camera.")]
+    //public CameraShake playerCameraShake;
 
     private bool isGrounded;
     private bool canJump = true;
     private Vector3 startPosition;
-    private Queue<ActionData> actionQueue = new Queue<ActionData>(); 
+    private Queue<ActionData> actionQueue = new Queue<ActionData>();
 
-    private float currentTargetZ; 
-    private float lastUpdateTime; 
+    private float currentTargetZ;
+    private float lastUpdateTime;
+
+    public ParticleSystem orbCollected;
 
     void Start()
     {
@@ -41,8 +47,8 @@ public class PlayerController : MonoBehaviour
 
         CheckGrounded();
         HandleInput();
-        ProcessQueuedActions(); 
-        ApplyDelayedForwardMovement(); 
+        ProcessQueuedActions();
+        ApplyDelayedForwardMovement();
     }
 
     void HandleInput()
@@ -55,8 +61,7 @@ public class PlayerController : MonoBehaviour
                 timestamp = Time.time,
                 position = transform.position
             });
-            canJump = false; 
-                             
+            canJump = false;
         }
     }
 
@@ -68,8 +73,8 @@ public class PlayerController : MonoBehaviour
 
             if (Time.time >= action.timestamp + inputDelay)
             {
-                actionQueue.Dequeue(); 
-                ExecuteAction(action); 
+                actionQueue.Dequeue();
+                ExecuteAction(action);
             }
             else
             {
@@ -85,28 +90,24 @@ public class PlayerController : MonoBehaviour
             case ActionType.Jump:
                 PerformJump();
                 break;
-                
         }
     }
 
     void ApplyDelayedForwardMovement()
     {
-       
         float idealDeltaZ = GameManager.Instance.CurrentSpeed * Time.deltaTime;
         currentTargetZ += idealDeltaZ;
 
         float targetZWithDelay = currentTargetZ - (GameManager.Instance.CurrentSpeed * inputDelay);
 
-
         transform.position = new Vector3(
             transform.position.x,
             transform.position.y,
-            Mathf.Lerp(transform.position.z, targetZWithDelay, 10f * Time.deltaTime) // Using a constant interpolation speed for smoothness
+            Mathf.Lerp(transform.position.z, targetZWithDelay, 10f * Time.deltaTime)
         );
 
         lastUpdateTime = Time.time;
     }
-
 
     void Jump()
     {
@@ -116,12 +117,18 @@ public class PlayerController : MonoBehaviour
     void PerformJump()
     {
         Jump();
+        // Play jump particle effect for the player
+        if (ParticleManager.Instance != null)
+        {
+            ParticleManager.Instance.PlayJumpEffect(transform.position);
+        }
+
         if (GameManager.Instance.networkSimulator != null)
         {
             GameManager.Instance.networkSimulator.SendAction(new ActionData
             {
                 actionType = ActionType.Jump,
-                timestamp = Time.time, 
+                timestamp = Time.time,
                 position = transform.position
             });
         }
@@ -132,17 +139,13 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckDistance, groundLayer);
         if (isGrounded)
         {
-            canJump = true; 
+            canJump = true;
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Orb"))
-        {
-            CollectOrb(other.gameObject);
-        }
-        else if (other.CompareTag("Obstacle"))
+        if (other.CompareTag("Obstacle"))
         {
             HitObstacle(other.gameObject);
         }
@@ -151,6 +154,8 @@ public class PlayerController : MonoBehaviour
     void CollectOrb(GameObject orb)
     {
         GameManager.Instance.AddScore(10);
+
+       
 
         if (GameManager.Instance.networkSimulator != null)
         {
@@ -168,16 +173,14 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Destroy(orb); 
-        }
-        if (ParticleManager.Instance != null)
-        {
-            ParticleManager.Instance.PlayOrbCollectEffect(orb.transform.position);
+            Destroy(orb);
         }
     }
 
     void HitObstacle(GameObject obstacle)
     {
+        
+
         if (GameManager.Instance.networkSimulator != null)
         {
             GameManager.Instance.networkSimulator.SendAction(new ActionData
@@ -188,20 +191,17 @@ public class PlayerController : MonoBehaviour
             });
         }
 
-        GameManager.Instance.GameOver();
-
-        if (ObjectPool.Instance != null)
+        if (ParticleManager.Instance != null)
         {
-            ObjectPool.Instance.ReturnObject("Obstacle", obstacle);
+            ParticleManager.Instance.PlayExplosionEffect(transform.position);
         }
         else
         {
-            Destroy(obstacle);
+            Debug.LogWarning("ParticleManager.Instance is null. Jump effect for ghost cannot be played.");
         }
-        if (ParticleManager.Instance != null)
-        {
-            ParticleManager.Instance.PlayExplosionEffect(obstacle.transform.position);
-        }
+
+        GameManager.Instance.GameOver();
+
     }
 
     public void ResetPlayer()
@@ -213,5 +213,11 @@ public class PlayerController : MonoBehaviour
         canJump = true;
         currentTargetZ = startPosition.z;
         lastUpdateTime = Time.time;
+    }
+
+    internal void PlayOrbCollectEffect(Vector3 position)
+    {
+        orbCollected.transform.position = position;
+        orbCollected.Play();
     }
 }

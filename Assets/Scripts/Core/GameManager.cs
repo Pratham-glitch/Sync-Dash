@@ -143,13 +143,23 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        StartCoroutine(GameOverCoroutine());
+    }
+
+    private IEnumerator GameOverCoroutine()
+    {
+        Debug.Log("GameOverCoroutine just ran");
+        CameraManager.instance.HitShake();
+        Destroy(playerController.gameObject);
+        yield return new WaitForSeconds(3);
+
         isGameRunning = false;
         if (gameOverScreen != null)
             gameOverScreen.SetActive(true);
 
         if (obstacleSpawner != null) obstacleSpawner.StopSpawning();
         if (networkSimulator != null) networkSimulator.StopSimulation();
-        Time.timeScale = 0f; 
+        Time.timeScale = 0f;
     }
 
     public void RestartGame()

@@ -8,6 +8,7 @@ TagManager:
   - Orb
   - GhostObstacle
   - GhostOrb
+  - GhostPlayer
   layers:
   - Default
   - TransparentFX

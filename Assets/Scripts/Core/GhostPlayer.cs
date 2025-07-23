@@ -1,17 +1,20 @@
 using UnityEngine;
 using System.Collections.Generic;
+using NUnit.Framework;
+using System;
 
 public class GhostPlayer : MonoBehaviour
 {
     [Header("Sync Settings")]
-    public float interpolationSpeed = 10f; 
-    public float networkDelay = 0.1f;    
+    public float interpolationSpeed = 10f;
+    public float networkDelay = 0.1f;
 
     [Header("References")]
     public Rigidbody rb;
 
     private Queue<ActionData> actionQueue = new Queue<ActionData>();
     private Vector3 startPosition;
+    public ParticleSystem orbCollected;
 
     void Start()
     {
@@ -33,25 +36,8 @@ public class GhostPlayer : MonoBehaviour
         transform.Translate(Vector3.forward * GameManager.Instance.CurrentSpeed * Time.deltaTime);
     }
 
-    void ProcessActions()
-    {
-        while (actionQueue.Count > 0)
-        {
-            ActionData action = actionQueue.Peek();
 
-            if (Time.time >= action.timestamp + networkDelay)
-            {
-                actionQueue.Dequeue(); 
-                ExecuteAction(action); 
-            }
-            else
-            {
-                break; 
-            }
-        }
-    }
-
-    void OnTriggerEnter(Collider other)
+   /* void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("GhostOrb"))
         {
@@ -63,31 +49,43 @@ public class GhostPlayer : MonoBehaviour
     {
         //GameManager.Instance.AddScore_Bot(10);
 
-        if (ParticleManager.Instance != null)
-        {
-            ParticleManager.Instance.PlayOrbCollectEffect(orb.transform.position);
-        }
-
-        if (GameManager.Instance.networkSimulator != null)
-        {
-            GameManager.Instance.networkSimulator.SendAction(new ActionData
-            {
-                actionType = ActionType.Collect,
-                timestamp = Time.time,
-                position = orb.transform.position
-            });
-        }
-
         if (ObjectPool.Instance != null)
         {
             ObjectPool.Instance.ReturnObject("GhostOrb", orb);
         }
         else
         {
-            Destroy(orb); 
+            Debug.Log($"GhostOrb found at {orb.name} for pooling.");
+            if (ObjectPool.Instance != null)
+            {
+                ObjectPool.Instance.ReturnObject("GhostOrb", orb);
+                return; // Only return one orb
+            }
+            else
+            {
+                Debug.LogWarning("ObjectPool.Instance is null. GhostOrb cannot be returned to pool.");
+            }
+            Destroy(orb);
+        }
+    }*/
+
+    void ProcessActions()
+    {
+        while (actionQueue.Count > 0)
+        {
+            ActionData action = actionQueue.Peek();
+
+            if (Time.time >= action.timestamp + networkDelay)
+            {
+                actionQueue.Dequeue();
+                ExecuteAction(action);
+            }
+            else
+            {
+                break;
+            }
         }
     }
-
 
     void ExecuteAction(ActionData action)
     {
@@ -97,10 +95,10 @@ public class GhostPlayer : MonoBehaviour
                 PerformJump();
                 break;
             case ActionType.Collect:
-                PlayCollectEffect(action.position);
+                //PlayCollectEffect(action.position);
                 break;
             case ActionType.Collision:
-                PlayCollisionEffect(action.position);
+                //PlayCollisionEffect(action.position);
                 break;
         }
     }
@@ -116,28 +114,28 @@ public class GhostPlayer : MonoBehaviour
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 10f, rb.linearVelocity.z);
         }
 
+        // Play jump particle effect for the ghost
         if (ParticleManager.Instance != null)
         {
             ParticleManager.Instance.PlayJumpEffect(transform.position);
         }
-    }
-
-    void PlayCollectEffect(Vector3 position)
-    {
-
-        Debug.Log("Ghost collected orb!");
-        if (ParticleManager.Instance != null)
+        else
         {
-            ParticleManager.Instance.PlayOrbCollectEffect(position);
+            Debug.LogWarning("ParticleManager.Instance is null. Jump effect for ghost cannot be played.");
         }
     }
 
+   
+
     void PlayCollisionEffect(Vector3 position)
     {
-        Debug.Log("Ghost hit obstacle!");
         if (ParticleManager.Instance != null)
         {
-            ParticleManager.Instance.PlayExplosionEffect(position);
+            ParticleManager.Instance.PlayExplosionEffect(transform.position);
+        }
+        else
+        {
+            Debug.LogWarning("ParticleManager.Instance is null. Jump effect for ghost cannot be played.");
         }
     }
 
@@ -150,6 +148,13 @@ public class GhostPlayer : MonoBehaviour
     {
         transform.position = startPosition;
         rb.linearVelocity = Vector3.zero;
-        actionQueue.Clear(); 
+        rb.angularVelocity = Vector3.zero; // Also reset angular velocity
+        actionQueue.Clear();
+    }
+
+    internal void PlayOrbCollectEffect(Vector3 position)
+    {
+        orbCollected.transform.position = position;
+        orbCollected.Play();
     }
 }
